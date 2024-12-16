@@ -29,7 +29,7 @@ export default function RootLayout({
     >
       <Navbar />
       <div className="flex justify-center">
-        <div className="flex flex-col w-[732px]">{children}</div>
+        <div className="flex flex-col w-[732px] mx-7">{children}</div>
       </div>
     </div>
   )
