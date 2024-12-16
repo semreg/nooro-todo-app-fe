@@ -1,3 +1,5 @@
+import './globals.css'
+
 import React from 'react'
 import {
   HydrationBoundary,
