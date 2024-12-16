@@ -1,13 +1,13 @@
-import { Task, TaskRequest } from '@/types'
+import { Task, TaskFormData } from '@/types'
 import { BASE_URL } from '@/constants'
 
-export const createTask = async (taskRequest: TaskRequest): Promise<Task> => {
+export const createTask = async (taskFormData: TaskFormData): Promise<Task> => {
   const response = await fetch(BASE_URL, {
     headers: {
       'Content-Type': 'application/json',
     },
     method: 'POST',
-    body: JSON.stringify(taskRequest),
+    body: JSON.stringify(taskFormData),
   })
 
   return await response.json()

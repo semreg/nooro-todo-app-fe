@@ -1,153 +1,100 @@
-import React, { ChangeEventHandler, useState } from 'react'
-import Link from 'next/link'
+import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import Circle from '@/components/Circle'
 import Button from '@/components/Button'
-import { Color, Task } from '@/types'
+import { Color, Task, TaskFormData } from '@/types'
 import { COLOR_OPTIONS } from '@/constants'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTask, updateTask } from '@/api/mutations'
-import { useRouter } from 'next/router'
 
-type Props = {
+type TaskFormProps = {
   mode: 'create' | 'edit'
-  item?: Task
+  item?: Partial<Task>
+  onSubmit: (formData: TaskFormData) => void
 }
 
-const TaskForm: React.FC<Props> = ({ mode, item }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
   const router = useRouter()
+
   const [title, setTitle] = useState<string>(item?.title || '')
   const [selectedColor, setSelectedColor] = useState<Color>(
     item?.color || 'RED'
   )
 
-  const queryClient = useQueryClient()
-
-  const updateTaskMutation = useMutation({
-    mutationFn: updateTask,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
-    },
-  })
-
-  const createTaskMutation = useMutation({
-    mutationFn: createTask,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
-    },
-  })
-
-  const onTitleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+  const handleTitleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setTitle(e.target.value)
   }
 
-  const onColorChange = (v: Color) => {
-    setSelectedColor(v)
+  const handleSubmit = async () => {
+    if (!title.trim()) return // Prevent submission with empty title
+
+    onSubmit({
+      title,
+      color: selectedColor,
+    })
+
+    router.push('/')
   }
 
-  const onSubmit = () => {
-    if (mode === 'create') {
-      createTaskMutation.mutate({
-        title,
-        color: selectedColor,
-        isCompleted: false,
-      })
-
-      router.push('/')
-    } else {
-      updateTaskMutation.mutate({
-        ...item,
-        title: title,
-        color: selectedColor,
-        isCompleted: false,
-      })
-
-      router.push('/')
-    }
-  }
+  const isFormValid = useMemo(() => title.trim().length > 0, [title])
 
   return (
-    <>
+    <div className="task-form-container">
       <Image
         src="/arrow-left.svg"
-        alt="back"
-        height="24"
-        width="24"
+        alt="Back"
+        height={24}
+        width={24}
         className="mt-20 cursor-pointer"
         onClick={() => router.push('/')}
       />
 
       <div className="mt-10">
-        <div>
-          <label htmlFor="title" className="text-sm font-bold text-[#4EA8DE]">
-            Title
-          </label>
-        </div>
-
+        <label htmlFor="title" className="text-sm font-bold text-[#4EA8DE]">
+          Title
+        </label>
         <input
           type="text"
           id="title"
           placeholder="Ex. Brush your teeth"
-          className={
-            'mt-3 bg-[#262626] p-4 rounded-lg border border-[#333333] w-[100%] text-[#F2F2F2]'
-          }
+          className="mt-3 bg-[#262626] p-4 rounded-lg border border-[#333333] w-full text-[#F2F2F2]"
           value={title}
-          onChange={onTitleChange}
+          onChange={handleTitleChange}
         />
       </div>
 
       <div className="mt-10">
-        <div>
-          <label htmlFor="title" className="text-sm font-bold text-[#4EA8DE]">
-            Color
-          </label>
-        </div>
-
-        <div className={'flex mt-2'}>
+        <label className="text-sm font-bold text-[#4EA8DE]">Color</label>
+        <div className="flex mt-2">
           {COLOR_OPTIONS.map((color) => (
             <Circle
               key={color}
               color={color}
-              className={`h-[52px] cursor-pointer w-[52px] mr-4 ${color === selectedColor ? 'border-2 solid' : ''}`}
-              onClick={() => onColorChange(color)}
+              className={`h-[52px] w-[52px] mr-4 cursor-pointer ${
+                color === selectedColor ? 'border-2 border-solid' : ''
+              }`}
+              onClick={() => setSelectedColor(color)}
               filled
             />
           ))}
         </div>
       </div>
 
-      {mode === 'create' ? (
-        <Button
-          onClick={onSubmit}
-          label="Add task"
-          className="mt-10"
-          icon={
-            <Image
-              className="ml-2"
-              src="/plus.svg"
-              alt="Plus"
-              height="16"
-              width="16"
-            />
-          }
-        />
-      ) : (
-        <Button
-          onClick={onSubmit}
-          label="Save"
-          className="mt-10"
-          icon={
-            <Image
-              className="ml-2"
-              src="/check-icon.svg"
-              alt="Plus"
-              height="16"
-              width="16"
-            />
-          }
-        />
-      )}
-    </>
+      <Button
+        disabled={!isFormValid}
+        onClick={handleSubmit}
+        label={mode === 'create' ? 'Create' : 'Save'}
+        className="mt-10"
+        icon={
+          <Image
+            className="ml-2"
+            src={mode === 'create' ? '/plus.svg' : '/check-icon.svg'}
+            alt={mode === 'create' ? 'Plus' : 'Check'}
+            height={16}
+            width={16}
+          />
+        }
+      />
+    </div>
   )
 }
 

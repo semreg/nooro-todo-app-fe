@@ -18,4 +18,11 @@ export type Task = {
   updatedAt: Date
 }
 
-export type TaskRequest = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
+export type TaskRequest = Omit<Task, 'createdAt' | 'updatedAt'> & {
+  id?: number
+  isCompleted?: boolean
+}
+
+export type TaskFormData = Partial<
+  Pick<Task, 'title' | 'color' | 'isCompleted'>
+>

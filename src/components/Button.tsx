@@ -1,5 +1,4 @@
 import React, { JSX } from 'react'
-import Image from 'next/image'
 
 type Props = {
   label: string
@@ -7,6 +6,7 @@ type Props = {
   onClick?: () => void
   color?: string
   icon?: JSX.Element
+  disabled?: boolean
 }
 
 const Button: React.FC<Props> = ({
@@ -15,10 +15,12 @@ const Button: React.FC<Props> = ({
   onClick,
   color = '#1E6F9F',
   icon,
+  disabled = false,
 }) => (
   <button
+    disabled={disabled}
     onClick={onClick}
-    className={`rounded-md w-full h-[52px] bg-[${color}] text-sm font-bold flex justify-center items-center ${className}`}
+    className={`rounded-md w-full h-[52px] bg-[${color}] text-sm font-bold flex justify-center items-center disabled:opacity-50 ${className}`}
   >
     <span>{label}</span>
 

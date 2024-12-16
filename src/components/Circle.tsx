@@ -1,6 +1,6 @@
 import { COLORS_MAP } from '@/constants'
 import { Color } from '@/types'
-import { CSSProperties, JSX, useMemo } from 'react'
+import React, { CSSProperties, JSX, useMemo } from 'react'
 
 type Props = {
   color: Color
@@ -34,7 +34,7 @@ const Circle: React.FC<Props> = ({
   return (
     <div
       onClick={onClick}
-      className={`rounded-full ${className} flex align-center justify-center`}
+      className={`rounded-full flex ${className} items-center justify-center test`}
       style={circleStyle}
     >
       {children}
@@ -42,4 +42,4 @@ const Circle: React.FC<Props> = ({
   )
 }
 
-export default Circle
+export default React.memo(Circle)
