@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchTask } from '@/api/queries'
 import { useRouter } from 'next/router'
 import { updateTask } from '@/api/mutations'
-import { TaskFormData } from '@/types'
+import { Task, TaskFormData } from '@/types'
+import * as taskUtils from '@/utils'
 
 const EditPage = () => {
   const router = useRouter()
@@ -17,8 +18,23 @@ const EditPage = () => {
 
   const updateTaskMutation = useMutation({
     mutationFn: updateTask,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    mutationKey: ['updateTask'],
+    onMutate: async (newTask) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+
+      const previousTodos = queryClient.getQueryData(['tasks'])
+
+      queryClient.setQueryData(['tasks'], (old: Task[]) =>
+        taskUtils.findAndUpdate(old, newTask.id!, newTask)
+      )
+
+      return { previousTodos }
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(['tasks'], context?.previousTodos)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
 

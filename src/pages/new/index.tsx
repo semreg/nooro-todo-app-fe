@@ -8,8 +8,11 @@ const NewPage = () => {
 
   const createTaskMutation = useMutation({
     mutationFn: createTask,
+    mutationKey: ['createTask'],
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['tasks'],
+      })
     },
   })
 

@@ -52,7 +52,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
         <label htmlFor="title" className="text-sm font-bold text-[#4EA8DE]">
           Title
         </label>
+
         <input
+          autoFocus
           type="text"
           id="title"
           placeholder="Ex. Brush your teeth"
@@ -64,7 +66,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
 
       <div className="mt-10">
         <label className="text-sm font-bold text-[#4EA8DE]">Color</label>
-        <div className="flex mt-2">
+
+        <div className="flex flex-wrap mt-2 gap-2">
           {COLOR_OPTIONS.map((color) => (
             <Circle
               key={color}
@@ -81,6 +84,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
 
       <Button
         disabled={!isFormValid}
+        title={!isFormValid ? 'Title is required' : undefined}
         onClick={handleSubmit}
         label={mode === 'create' ? 'Create' : 'Save'}
         className="mt-10"

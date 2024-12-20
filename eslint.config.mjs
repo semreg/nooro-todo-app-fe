@@ -21,15 +21,17 @@ const eslintConfig = [
       unicorn,
     },
     rules: {
-      ...unicorn.configs.recommended.rules, // Unicorn's recommended rules
+      ...unicorn.configs.recommended.rules,
+      ...prettier.configs.recommended.rules,
       semi: 'off',
-      'prettier/prettier': 'warn', // Prettier as a linting rule
+      'prettier/prettier': 'warn',
       'unicorn/prevent-abbreviations': 'off',
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/import-style': 'off',
       'unicorn/filename-case': 'off',
       'unicorn/no-array-reduce': 'off',
       'unicorn/no-negated-condition': 'off',
+      'unicorn/no-null': 'off',
     },
   },
 ]

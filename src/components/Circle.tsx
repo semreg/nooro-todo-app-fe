@@ -1,13 +1,13 @@
 import { COLORS_MAP } from '@/constants'
 import { Color } from '@/types'
-import React, { CSSProperties, JSX, useMemo } from 'react'
+import React, { CSSProperties, ReactNode, useMemo } from 'react'
 
 type Props = {
   color: Color
   filled?: boolean
   className?: string
   onClick?: () => void
-  children?: JSX.Element
+  children?: ReactNode
 }
 
 const Circle: React.FC<Props> = ({

@@ -3,15 +3,76 @@ import Chip from '@/components/Chip'
 import TaskList from '@/components/TaskList'
 import React, { useMemo } from 'react'
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
+import {
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { fetchTasks } from '@/api/queries'
 import Image from 'next/image'
+import TaskItem from '@/components/TaskItem'
+import { Task } from '@/types'
+import { deleteTask, toggleTaskStatus } from '@/api/mutations'
+import * as utils from '@/utils'
+import { useDebouncedMutation } from '@/hooks'
 
 const HomePage = () => {
+  const createTaskMutationVariables = useMutationState({
+    filters: { mutationKey: ['createTask'], status: 'pending' },
+    select: (mutation) => mutation.state.variables,
+  })
+
+  const isUpdateMutationPending =
+    useMutationState({
+      filters: { mutationKey: ['updateTask'], status: 'pending' },
+      select: (mutation) => mutation.state.variables,
+    }).length > 0
+
   const { data, isLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: fetchTasks,
+    enabled: !isUpdateMutationPending,
   })
+
+  const queryClient = useQueryClient()
+
+  const toggleTaskStatusMutation = useDebouncedMutation(toggleTaskStatus, {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+
+      const previousTodos = queryClient.getQueryData(['tasks'])
+
+      queryClient.setQueryData(['tasks'], (old: Task[]) =>
+        utils.findAndToggleStatus(old, id)
+      )
+
+      return { previousTodos }
+    },
+    delayMs: 1000,
+  })
+
+  const removeTaskMutation = useMutation({
+    mutationFn: deleteTask,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+
+      const previousTodos = queryClient.getQueryData(['tasks'])
+
+      queryClient.setQueryData(['tasks'], (old: Task[]) =>
+        utils.findByIdAndRemove(old, id)
+      )
+      return { previousTodos }
+    },
+    onError: (err, newTodo, context) => {
+      queryClient.setQueryData(['tasks'], context?.previousTodos)
+    },
+  })
+
+  const isCreateMutationPending = useMemo(
+    () => !!createTaskMutationVariables?.length,
+    [createTaskMutationVariables]
+  )
 
   const completedTasksNum = useMemo(
     () => data?.reduce((acc, curr) => (curr.isCompleted ? acc + 1 : acc), 0),
@@ -44,7 +105,7 @@ const HomePage = () => {
       <div className="mt-10 flex w-full justify-between text-sm font-bold">
         <div className="flex">
           <span className="text-[#4EA8DE] mr-2">Tasks</span>
-          <Chip label={data?.length.toString()} />
+          <Chip label={(data?.length ?? 0).toString()} />
         </div>
 
         <div className="flex">
@@ -53,7 +114,24 @@ const HomePage = () => {
         </div>
       </div>
 
-      <TaskList isLoading={isLoading} items={data} />
+      <TaskList
+        isCreatePending={isCreateMutationPending}
+        isLoading={isLoading}
+        items={data}
+        toggleTaskStatus={toggleTaskStatusMutation.mutateAsync}
+        removeTask={removeTaskMutation.mutate}
+      />
+
+      {isCreateMutationPending && (
+        <>
+          <TaskItem
+            item={createTaskMutationVariables[0] as Task}
+            isPending
+            removeTask={utils.noop}
+            toggleTaskStatus={utils.noop}
+          />
+        </>
+      )}
     </>
   )
 }
