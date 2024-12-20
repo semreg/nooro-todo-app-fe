@@ -6,13 +6,13 @@ import Button from '@/components/Button'
 import { Color, Task, TaskFormData } from '@/types'
 import { COLOR_OPTIONS } from '@/constants'
 
-type TaskFormProps = {
+type Props = {
   mode: 'create' | 'edit'
   item?: Partial<Task>
   onSubmit: (formData: TaskFormData) => void
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
+const TaskForm: React.FC<Props> = ({ mode, item, onSubmit }) => {
   const router = useRouter()
 
   const [title, setTitle] = useState<string>(item?.title || '')
@@ -25,7 +25,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
   }
 
   const handleSubmit = async () => {
-    if (!title.trim()) return // Prevent submission with empty title
+    if (!title.trim()) {
+      return
+    }
 
     onSubmit({
       title,
@@ -38,7 +40,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ mode, item, onSubmit }) => {
   const isFormValid = useMemo(() => title.trim().length > 0, [title])
 
   return (
-    <div className="task-form-container">
+    <div>
       <Image
         src="/arrow-left.svg"
         alt="Back"
